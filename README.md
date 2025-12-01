@@ -1,6 +1,6 @@
 # Deep Learning Side-Channel Analysis (SCA) - Project Overview
 
-This repository contains the implementation of a Deep Learning-based Side-Channel Attack (SCA) using the ASCAD benchmark dataset. The project is organized into two distinct phases, covering data ingestion/exploration and model development.
+This project implements a full Deep Learning pipeline using Azure Databricks to perform Side-Channel Analysis (SCA) on the ASCAD benchmark dataset. The repository is organized into two distinct phases, covering data ingestion/exploration and model development.
 
 ## Project Structure
 
