@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASCAD Predictor</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 30px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+        }
+
+        .controls-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            border-left: 4px solid #667eea;
+        }
+
+        .control-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        input[type="number"],
+        input[type="text"] {
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input[type="number"]:focus,
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        button {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 6px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+            flex: 1;
+        }
+
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .info-text {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .content-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border-top: 4px solid #667eea;
+        }
+
+        .section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .trace-preview {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 0.85em;
+            color: #555;
+        }
+
+        .trace-preview-item {
+            padding: 4px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .trace-preview-item:last-child {
+            border-bottom: none;
+        }
+
+        .plot-container {
+            background: white;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #ddd;
+            text-align: center;
+            min-height: 300px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .plot-container img {
+            max-width: 100%;
+            height: auto;
+            border-radius: 4px;
+        }
+
+        .plot-placeholder {
+            color: #999;
+            font-size: 1em;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .status-message {
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .status-message.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+            display: block;
+        }
+
+        .status-message.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+            display: block;
+        }
+
+        .status-message.info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+            display: block;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #667eea;
+        }
+
+        .loading.active {
+            display: block;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .dataset-info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-radius: 6px;
+            border-left: 4px solid #2196F3;
+            margin-bottom: 20px;
+            font-size: 0.9em;
+            color: #333;
+        }
+
+        .dataset-info p {
+            margin: 5px 0;
+        }
+
+        @media (max-width: 768px) {
+            .control-group {
+                grid-template-columns: 1fr;
+            }
+
+            .content-section {
+                grid-template-columns: 1fr;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            h1 {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔐 ASCAD Power Trace Predictor</h1>
+
+        <!-- Status Messages -->
+        <div id="statusMessage" class="status-message"></div>
+
+        <!-- Dataset Info -->
+        <div id="datasetInfo" class="dataset-info">
+            <p><strong>Dataset Information:</strong></p>
+            <p id="datasetDetails">Loading dataset information...</p>
+        </div>
+
+        <!-- Controls Section -->
+        <div class="controls-section">
+            <div class="control-group">
+                <div class="input-group">
+                    <label for="traceIndex">Trace Index</label>
+                    <input type="number" id="traceIndex" min="0" value="0" placeholder="Enter trace index">
+                    <span class="info-text">Select a trace from the dataset</span>
+                </div>
+
+                <div class="input-group">
+                    <label for="traceLength">Trace Length</label>
+                    <input type="text" id="traceLength" readonly placeholder="700 samples" value="700 samples">
+                    <span class="info-text">Fixed trace length</span>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn-primary" id="loadTraceBtn">Load Trace</button>
+                    <button class="btn-primary" id="predictBtn">Predict</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loading Indicator -->
+        <div id="loading" class="loading">
+            <div class="spinner"></div>
+            <p>Processing...</p>
+        </div>
+
+        <!-- Content Section -->
+        <div class="content-section">
+            <!-- Trace Preview Section -->
+            <div class="section">
+                <h2>📊 Trace Preview</h2>
+                <div class="trace-preview" id="tracePreview">
+                    <div class="plot-placeholder">Load a trace to see the preview</div>
+                </div>
+            </div>
+
+            <!-- Trace Plot Section -->
+            <div class="section">
+                <h2>📈 Trace Plot</h2>
+                <div class="plot-container" id="tracePlot">
+                    <div class="plot-placeholder">Trace plot will appear here</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Prediction Result Section -->
+        <div class="section full-width">
+            <h2>🎯 Prediction Result</h2>
+            
+            <!-- Match Status Display -->
+            <div id="matchStatus" style="display: none; margin-bottom: 20px;">
+                <div id="matchCard" style="padding: 20px; border-radius: 8px; text-align: center; font-size: 1.1em;">
+                    <div id="matchMessage" style="font-weight: bold; margin-bottom: 10px;"></div>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 15px;">
+                        <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #2196F3;">
+                            <p style="color: #666; font-size: 0.9em; margin-bottom: 5px;">Correct Label</p>
+                            <p id="correctLabelValue" style="font-size: 1.5em; font-weight: bold; color: #2196F3;"></p>
+                        </div>
+                        <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #FF9800;">
+                            <p style="color: #666; font-size: 0.9em; margin-bottom: 5px;">Predicted Label</p>
+                            <p id="predictedLabelValue" style="font-size: 1.5em; font-weight: bold; color: #FF9800;"></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="plot-container" id="predictionPlot">
+                <div class="plot-placeholder">Prediction plot will appear here after clicking "Predict"</div>
+            </div>
+        </div>
+
+        <!-- Top 5 Predictions -->
+        <div class="section full-width" id="top5Section" style="display: none;">
+            <h2>🏆 Top 5 Predictions</h2>
+            <div id="top5List" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 10px;">
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Initialize
+        document.addEventListener('DOMContentLoaded', function() {
+            loadDatasetInfo();
+        });
+
+        // Load dataset information
+        function loadDatasetInfo() {
+            fetch('/api/dataset_info')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.error) {
+                        showMessage('Error loading dataset: ' + data.error, 'error');
+                        document.getElementById('datasetDetails').textContent = 'Dataset not available';
+                    } else {
+                        const details = `Total Traces: ${data.num_traces} | Trace Length: ${data.trace_length} samples | Classes: ${data.num_classes}`;
+                        document.getElementById('datasetDetails').textContent = details;
+                        document.getElementById('traceIndex').max = data.num_traces - 1;
+                    }
+                })
+                .catch(error => {
+                    showMessage('Error: ' + error, 'error');
+                });
+        }
+
+        // Load trace
+        document.getElementById('loadTraceBtn').addEventListener('click', function() {
+            const index = parseInt(document.getElementById('traceIndex').value);
+            loadTrace(index);
+        });
+
+        // Predict
+        document.getElementById('predictBtn').addEventListener('click', function() {
+            const index = parseInt(document.getElementById('traceIndex').value);
+            predict(index);
+        });
+
+        // Allow Enter key to load trace
+        document.getElementById('traceIndex').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('loadTraceBtn').click();
+            }
+        });
+
+        function loadTrace(index) {
+            showLoading(true);
+            fetch('/api/get_trace', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ index: index })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                if (data.error) {
+                    showMessage('Error: ' + data.error, 'error');
+                } else {
+                    showMessage('Trace loaded successfully', 'success');
+                    displayTracePreview(data.trace);
+                    displayTracePlot(data.trace_plot);
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                showMessage('Error: ' + error, 'error');
+            });
+        }
+
+        function predict(index) {
+            showLoading(true);
+            fetch('/api/predict', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ index: index })
+            })
+            .then(response => response.json())
+            .then(data => {
+                showLoading(false);
+                if (data.error) {
+                    showMessage('Error: ' + data.error, 'error');
+                } else {
+                    showMessage('Prediction completed successfully', 'success');
+                    displayPredictionPlot(data.prediction_plot);
+                    displayTop5Predictions(data.top_5_classes, data.top_5_probabilities);
+                    displayMatchStatus(data.correct_label, data.predicted_label, data.is_match, data.match_confidence);
+                }
+            })
+            .catch(error => {
+                showLoading(false);
+                showMessage('Error: ' + error, 'error');
+            });
+        }
+
+        function displayTracePreview(trace) {
+            const preview = document.getElementById('tracePreview');
+            const maxItems = 50;
+            const step = Math.max(1, Math.floor(trace.length / maxItems));
+            
+            let html = '';
+            for (let i = 0; i < trace.length; i += step) {
+                html += `<div class="trace-preview-item">Sample ${i}: ${trace[i].toFixed(2)}</div>`;
+            }
+            
+            preview.innerHTML = html;
+        }
+
+        function displayTracePlot(plotBase64) {
+            const container = document.getElementById('tracePlot');
+            container.innerHTML = `<img src="${plotBase64}" alt="Trace Plot">`;
+        }
+
+        function displayPredictionPlot(plotBase64) {
+            const container = document.getElementById('predictionPlot');
+            container.innerHTML = `<img src="${plotBase64}" alt="Prediction Plot">`;
+        }
+
+        function displayMatchStatus(correctLabel, predictedLabel, isMatch, matchConfidence) {
+            const matchStatus = document.getElementById('matchStatus');
+            const matchCard = document.getElementById('matchCard');
+            const matchMessage = document.getElementById('matchMessage');
+            const correctLabelValue = document.getElementById('correctLabelValue');
+            const predictedLabelValue = document.getElementById('predictedLabelValue');
+            
+            correctLabelValue.textContent = correctLabel;
+            predictedLabelValue.textContent = predictedLabel;
+            
+            if (isMatch) {
+                matchCard.style.background = 'linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%)';
+                matchCard.style.border = '2px solid #28a745';
+                matchMessage.innerHTML = '✓ <span style="color: #155724;">CORRECT PREDICTION!</span>';
+                matchMessage.style.color = '#155724';
+            } else {
+                matchCard.style.background = 'linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%)';
+                matchCard.style.border = '2px solid #dc3545';
+                matchMessage.innerHTML = '✗ <span style="color: #721c24;">INCORRECT PREDICTION</span>';
+                matchMessage.style.color = '#721c24';
+            }
+            
+            // Add confidence percentage
+            const confidencePercent = (matchConfidence * 100).toFixed(2);
+            matchMessage.innerHTML += `<div style="font-size: 0.9em; margin-top: 8px; font-weight: normal;">Confidence: ${confidencePercent}%</div>`;
+            
+            matchStatus.style.display = 'block';
+        }
+
+        function displayTop5Predictions(classes, probabilities) {
+            const section = document.getElementById('top5Section');
+            const list = document.getElementById('top5List');
+            
+            let html = '';
+            for (let i = 0; i < classes.length; i++) {
+                const percentage = (probabilities[i] * 100).toFixed(2);
+                html += `
+                    <div style="background: white; padding: 15px; border-radius: 6px; border-left: 4px solid #667eea;">
+                        <p style="font-weight: bold; color: #333; margin-bottom: 5px;">Class ${classes[i]}</p>
+                        <p style="color: #666; margin: 5px 0;">Probability: ${percentage}%</p>
+                        <div style="background: #f0f0f0; border-radius: 4px; height: 8px; overflow: hidden;">
+                            <div style="background: #667eea; height: 100%; width: ${percentage}%;"></div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            list.innerHTML = html;
+            section.style.display = 'block';
+        }
+
+        function showMessage(message, type) {
+            const statusDiv = document.getElementById('statusMessage');
+            statusDiv.textContent = message;
+            statusDiv.className = 'status-message ' + type;
+            
+            // Auto-hide after 5 seconds
+            setTimeout(() => {
+                statusDiv.className = 'status-message';
+            }, 5000);
+        }
+
+        function showLoading(show) {
+            const loading = document.getElementById('loading');
+            if (show) {
+                loading.classList.add('active');
+            } else {
+                loading.classList.remove('active');
+            }
+        }
+    </script>
+</body>
+</html>
